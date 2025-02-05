@@ -33,7 +33,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(Integer id, User user) {
+    public User updateUser(Integer userId, User updatedUser) {
+        return userRepository.findById(userId)
+                .map(existingUser -> {
+                    existingUser.setFirstName(updatedUser.getFirstName());
+                    existingUser.setLastName(updatedUser.getLastName());
+                    existingUser.setEmail(updatedUser.getEmail());
+                    existingUser.setPassword(updatedUser.getPassword());
+                    existingUser.setRole(updatedUser.getRole());
+                    return userRepository.save(existingUser);
+                })
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+    }
+
+    /*  public User updateUser(Integer id, User user) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         existingUser.setFirstName(user.getFirstName());
@@ -42,7 +55,7 @@ public class UserServiceImpl implements UserService {
         existingUser.setPassword(user.getPassword());
         existingUser.setRole(user.getRole());
         return userRepository.save(existingUser);
-    }
+    }*/
     @Override
     public User getUserById(Integer id) {
         return userRepository.findById(id)

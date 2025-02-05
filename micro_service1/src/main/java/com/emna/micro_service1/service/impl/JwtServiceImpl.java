@@ -43,12 +43,22 @@ public class JwtServiceImpl implements JwtService {
         return claimsResolvers.apply(claims);
     }
 
-   private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return Jwts.builder().setClaims(extraClaims).setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 *60* 24))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256).compact();
+    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        Date now = new Date(System.currentTimeMillis());
+        Date expiryDate = new Date(now.getTime() + 1000 * 60 * 60 * 24); // 24 hours
+
+        System.out.println("Token Generated at: " + now);
+        System.out.println("Token Expiry at: " + expiryDate);
+
+        return Jwts.builder()
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
+
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
