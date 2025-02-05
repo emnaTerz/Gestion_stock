@@ -37,10 +37,11 @@ public class AuthenticationController {
     @Autowired
     private JwtServiceImpl jwtService;
 
-   @PostMapping("/signup")
+  /* @PostMapping("/signup")
    public ResponseEntity<String> signup(@RequestBody SignUpRequest request) {
-       System.out.println("Attempting to register user with email: " + request.getEmail());
+
        try {
+
            authenticationService.signup(request);
            System.out.println("User registration successful.");
            return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
@@ -48,22 +49,59 @@ public class AuthenticationController {
            System.out.println("User registration failed: " + e.getMessage());
            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Registration failed: " + e.getMessage());
        }
-   }
-
-
-
-  /*  @PostMapping("/signin")
-   public ResponseEntity<JwtAuthenticationResponse> signin(@RequestBody SigninRequest request) {
-       try {
-           JwtAuthenticationResponse response = authenticationService.signin(request);
-           System.out.println("Authentication successful, token generated: " + response.getToken());
-           return ResponseEntity.ok(response);
-       } catch (Exception e) {
-           System.out.println("Authentication failed: " + e.getMessage());
-           return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-       }
    }*/
-  @PostMapping("/signin")
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(
+            @RequestBody SignUpRequest request,
+            HttpServletRequest httpRequest) {
+
+        try {
+            //  Extraire le token depuis l'en-tête Authorization
+            String token = jwtService.getTokenFromRequest(httpRequest);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Missing or invalid token.");
+            }
+
+            // Extraire le username à partir du token
+            String username = jwtService.extractUserName(token);
+            if (username == null || username.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid token: cannot extract user.");
+            }
+
+            // Vérifier si le token est valide
+            User adminUser = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new UserNotFoundException("Admin user not found."));
+            if (!jwtService.isTokenValid(token, new UserDetailsImpl(username))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Invalid token.");
+            }
+
+
+            // Créer le nouvel utilisateur
+            authenticationService.signup(request);
+            System.out.println("User registration successful.");
+
+            //  Retourner la réponse
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body("User created successfully.");
+
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Token has expired, please log in again.");
+        } catch (MalformedJwtException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Invalid token format.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Registration failed: " + e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/signin")
   public ResponseEntity<?> signin(@RequestBody SigninRequest request) {
       try {
           JwtAuthenticationResponse response = authenticationService.signin(request);
@@ -79,10 +117,6 @@ public class AuthenticationController {
                   .body(Map.of("error", "An unexpected error occurred. Please try again later."));
       }
   }
-
-
-
-
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Integer id, HttpServletRequest request) {
@@ -144,12 +178,6 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
     }}
 
-  /*  @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User user ) {
-        System.out.println("user" +user);
-        User updatedUser = userService.updateUser(id, user);
-        return ResponseEntity.ok(updatedUser);
-    }*/
   @PutMapping("/{id}")
   public ResponseEntity<?> updateUser(
           @PathVariable Integer id,
@@ -180,12 +208,57 @@ public class AuthenticationController {
     } catch (Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
     }}
+    
 
-   @DeleteMapping("/{id}")
-   public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
-       userService.deleteUser(id);
-       return ResponseEntity.noContent().build();
-   }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(
+            @PathVariable Integer id,
+            HttpServletRequest request) {
+        try {
+            // 1️⃣ Extraire le token depuis l'en-tête Authorization
+            String token = jwtService.getTokenFromRequest(request);
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Missing or invalid token.");
+            }
+
+            // 2️⃣ Extraire le username à partir du token
+            String username = jwtService.extractUserName(token);
+            if (username == null || username.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid token: cannot extract user.");
+            }
+
+            // 3️⃣ Vérifier si le token est valide
+            User adminUser = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new UserNotFoundException("Admin user not found."));
+            if (!jwtService.isTokenValid(token, new UserDetailsImpl(username))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Invalid token.");
+            }
+
+            // 5️⃣ Vérifier si l'utilisateur à supprimer existe
+            if (!userRepository.existsById(id)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("User not found.");
+            }
+
+            // 6️⃣ Supprimer l'utilisateur
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Token has expired, please log in again.");
+        } catch (MalformedJwtException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Invalid token format.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         String token = jwtService.getTokenFromRequest(request);
