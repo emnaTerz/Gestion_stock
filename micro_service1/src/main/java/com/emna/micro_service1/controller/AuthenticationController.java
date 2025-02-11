@@ -1,6 +1,7 @@
 package com.emna.micro_service1.controller;
 
 import com.emna.jwt_service.Service.ServiceImpl.JwtServiceImpl;
+import com.emna.micro_service1.DTO.UserDTO;
 import com.emna.micro_service1.dao.request.SignUpRequest;
 import com.emna.micro_service1.dao.request.SigninRequest;
 import com.emna.micro_service1.dao.response.JwtAuthenticationResponse;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -305,5 +307,15 @@ public class AuthenticationController {
                     .body(null);
         }
     }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.map(u -> ResponseEntity.ok(new UserDTO(
+                        u.getEmail(), u.getFirstName(), u.getLastName(), u.getRole())))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+
 
 }
