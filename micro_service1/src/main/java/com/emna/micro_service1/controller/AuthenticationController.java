@@ -95,8 +95,6 @@ public class AuthenticationController {
                     .body("Registration failed: " + e.getMessage());
         }
     }
-
-
     @PostMapping("/signin")
   public ResponseEntity<?> signin(@RequestBody SigninRequest request) {
       try {
