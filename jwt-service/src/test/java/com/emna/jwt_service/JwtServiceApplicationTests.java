@@ -1,11 +1,10 @@
-package com.emna.client_fournisseur;
+package com.emna.jwt_service;
 
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ClientFournisseurApplicationTests {
+class JwtServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

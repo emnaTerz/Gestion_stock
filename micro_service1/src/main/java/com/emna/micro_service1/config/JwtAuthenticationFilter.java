@@ -1,6 +1,6 @@
 package com.emna.micro_service1.config;
 
-import com.emna.micro_service1.service.JwtService;
+import com.emna.jwt_service.Service.JwtService;
 import com.emna.micro_service1.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

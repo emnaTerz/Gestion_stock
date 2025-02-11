@@ -1,5 +1,6 @@
 package com.emna.micro_service1.controller;
 
+import com.emna.jwt_service.Service.ServiceImpl.JwtServiceImpl;
 import com.emna.micro_service1.dao.request.SignUpRequest;
 import com.emna.micro_service1.dao.request.SigninRequest;
 import com.emna.micro_service1.dao.response.JwtAuthenticationResponse;
@@ -10,7 +11,6 @@ import com.emna.micro_service1.repository.UserActionHistoryRepository;
 import com.emna.micro_service1.repository.UserRepository;
 import com.emna.micro_service1.service.AuthenticationService;
 import com.emna.micro_service1.service.UserService;
-import com.emna.micro_service1.service.impl.JwtServiceImpl;
 import com.emna.micro_service1.service.impl.TokenBlacklistService;
 import com.emna.micro_service1.service.impl.UserActionService;
 import com.emna.micro_service1.service.impl.UserDetailsImpl;
@@ -21,11 +21,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.SignatureException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

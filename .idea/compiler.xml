@@ -11,6 +11,7 @@
         <module name="gateway" />
         <module name="discovery" />
         <module name="micro_service1" />
+        <module name="jwt-service" />
       </profile>
       <profile name="Annotation profile for client_fournisseur" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -32,6 +33,7 @@
       <module name="config-server" options="-parameters" />
       <module name="discovery" options="-parameters" />
       <module name="gateway" options="-parameters" />
+      <module name="jwt-service" options="" />
       <module name="login" options="-parameters" />
       <module name="micro_service1" options="-parameters" />
     </option>

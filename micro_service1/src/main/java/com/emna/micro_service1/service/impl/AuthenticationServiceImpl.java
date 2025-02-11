@@ -1,12 +1,12 @@
 package com.emna.micro_service1.service.impl;
 
+import com.emna.jwt_service.Service.JwtService;
 import com.emna.micro_service1.dao.request.SignUpRequest;
 import com.emna.micro_service1.dao.request.SigninRequest;
 import com.emna.micro_service1.dao.response.JwtAuthenticationResponse;
 import com.emna.micro_service1.entities.User;
 import com.emna.micro_service1.repository.UserRepository;
 import com.emna.micro_service1.service.AuthenticationService;
-import com.emna.micro_service1.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
