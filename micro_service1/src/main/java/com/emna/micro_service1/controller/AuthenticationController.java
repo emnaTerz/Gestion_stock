@@ -130,7 +130,7 @@ public class AuthenticationController {
             User user = userService.getUserById(id);
             String UserName = user.getUsername();
             // Supprimer l'utilisateur
-            userService.deleteUser(id);
+            userService.getUserById(id);
             userActionService.logUserAction(username, "l'utilisateur:" + username + " a visiter le profil de l'utilisateur: " + UserName, "/getuser" + id, "GET");
 
             if (user == null) {
@@ -314,6 +314,27 @@ public class AuthenticationController {
         return user.map(u -> ResponseEntity.ok(new UserDTO(
                         u.getEmail(), u.getFirstName(), u.getLastName(), u.getRole())))
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+
+    @PostMapping("/historique/add")
+    public ResponseEntity<?> createUserHistory(@RequestBody UserActionHistory userActionHistory) {
+        System.out.println("Received UserActionHistory: " + userActionHistory.getAction() + ""
+                + userActionHistory.getEndpoint() + "" + userActionHistory.getUsername() + "" + userActionHistory.getMethod()); // Debugging Log
+
+        if (userActionHistory.getUsername() == null || userActionHistory.getAction() == null ||
+                userActionHistory.getEndpoint() == null || userActionHistory.getMethod() == null) {
+            return ResponseEntity.badRequest().body("Invalid request: Some fields are null.");
+        }
+
+        userActionService.logUserAction(
+                userActionHistory.getUsername(),
+                userActionHistory.getAction(),
+                userActionHistory.getEndpoint(),
+                userActionHistory.getMethod()
+        );
+
+        return ResponseEntity.ok("User history logged successfully.");
     }
 
 
