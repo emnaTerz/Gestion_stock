@@ -56,7 +56,7 @@ public class ClientController {
                System.out.println("Received User from Feign: " + userDTO);
            } catch (Exception e) {
                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                       .body("Admin user not found in micro_service1.");
+                       .body("user not found in micro_service1.");
            }
 
            if (userDTO == null || userDTO.getEmail() == null || userDTO.getRole() == null) {
@@ -254,7 +254,7 @@ ResponseEntity <?> getClient (@PathVariable Integer id , HttpServletRequest requ
                 .body("Invalid token format.");
     } catch (Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Client creation failed: " + e.getMessage());
+                .body("get client failed: " + e.getMessage());
     }
 }
 @PutMapping("/updateClient/{id}")
