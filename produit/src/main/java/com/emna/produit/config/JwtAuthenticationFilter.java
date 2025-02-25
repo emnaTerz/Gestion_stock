@@ -1,16 +1,14 @@
+package com.emna.produit.config;
 
-
-package com.emna.client_fournisseur.config;
-
-import com.emna.client_fournisseur.FeignClient.UserClient;
-import com.emna.client_fournisseur.DTO.UserActionHistory;
-import com.emna.client_fournisseur.DTO.UserDTO;
+import com.emna.produit.FeignClient.UserClient;
+import com.emna.produit.DTO.UserActionHistory;
+import com.emna.produit.DTO.UserDTO;
 import com.emna.jwt_service.Service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,12 +22,15 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserClient userClient;
-
+    @Autowired
+    public JwtAuthenticationFilter(JwtService jwtService, UserClient userClient) {
+        this.jwtService = jwtService;
+        this.userClient = userClient;
+    }
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -46,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                // Fetch user details from micro_service1
+                // Fetch user details from client_fournisseur microservice
                 UserDTO userDTO = userClient.getUserByEmail(userEmail);
                 System.out.println("Received UserDTO from Feign: " + userDTO);
 
@@ -60,9 +61,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    System.out.println(" Authenticated user " + userEmail + ", setting security context");
+                    System.out.println("Authenticated user " + userEmail + ", setting security context");
 
-                    //  Log user authentication success
+                    // Log user authentication success
                     userClient.saveUserAction(new UserActionHistory(
                             userEmail,
                             "Authentication Success",
@@ -70,12 +71,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             request.getMethod()
                     ));
                 } else {
-                    System.out.println(" Invalid token for user: " + userEmail);
+                    System.out.println("Invalid token for user: " + userEmail);
                 }
             } catch (Exception e) {
-                System.out.println(" Error fetching user from micro_service1: " + e.getMessage());
+                System.out.println("Error fetching user from client_fournisseur: " + e.getMessage());
 
-                //  Log user authentication failure
+                // Log user authentication failure
                 userClient.saveUserAction(new UserActionHistory(
                         userEmail,
                         "Authentication Failure",

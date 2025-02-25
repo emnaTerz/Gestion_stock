@@ -44,7 +44,7 @@ public class AuthenticationController {
     private JwtServiceImpl jwtService;
 
 
-    @PostMapping("/signup")
+ @PostMapping("/signup")
     public ResponseEntity<?> signup(
             @RequestBody SignUpRequest request,
             HttpServletRequest httpRequest) {
