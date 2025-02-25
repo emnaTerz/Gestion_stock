@@ -11,6 +11,7 @@
         <option value="$PROJECT_DIR$/micro_service1/pom.xml" />
         <option value="$PROJECT_DIR$/client_fournisseur/pom.xml" />
         <option value="$PROJECT_DIR$/jwt-service/pom.xml" />
+        <option value="$PROJECT_DIR$/produit/pom.xml" />
       </list>
     </option>
   </component>
