@@ -4,19 +4,19 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.antlr.v4.runtime.misc.NotNull;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+
+
 
 @Data
 @Builder
 @AllArgsConstructor
 @Entity
-@Table(name = "category")  // Ensure table name is valid
-public class Category {  // Correct class naming convention
+@Table(name = "sous-category")  // Ensure table name is valid
 
+public class SousCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -25,15 +25,20 @@ public class Category {  // Correct class naming convention
 
     @Temporal(TemporalType.TIMESTAMP)  // Correct annotation for date
     private LocalDateTime creationDate;
-    private String imageUrl;
+    private String imageUrl;  // Attribut pour l'URL de l'image
 
-
-    public Category(String name, String imageUrl) {
+    @ManyToOne
+    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
+    private Category category;
+    public SousCategory(String name, String imageUrl, Category category_Id) {
         this.name = name;
         this.creationDate = LocalDateTime.now();
         this.imageUrl = imageUrl;
+        this.category = category_Id;
     }
-    public Category() {
+
+
+    public SousCategory() {
 
     }
 
@@ -49,9 +54,26 @@ public class Category {  // Correct class naming convention
         return name;
     }
 
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
+
+    public LocalDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
     public String getImageUrl() {
         return imageUrl;
     }
@@ -59,6 +81,4 @@ public class Category {  // Correct class naming convention
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
 }
-

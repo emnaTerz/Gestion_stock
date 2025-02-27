@@ -11,6 +11,6 @@ public interface CategoryService {
      Category GetCategory (Integer id);
      List <Category> GetAllCategories ();
      Category CreateCategory (CategoryResquest request);
-     Category UpdateCategory (Category category);
+     Category UpdateCategory (CategoryResquest category,Integer id);
 
 }

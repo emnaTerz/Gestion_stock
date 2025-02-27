@@ -17,17 +17,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(Integer id) {
-
+        Category existingCat = categorieRepository.getById(id);
+      if (existingCat != null)  {categorieRepository.deleteById(id);}
     }
 
     @Override
     public Category GetCategory(Integer id) {
-        return null;
+        return  categorieRepository.getById(id);
+
     }
 
     @Override
     public List<Category> GetAllCategories() {
-        return null;
+      return categorieRepository.findAll();
     }
 
     @Override
@@ -39,7 +41,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category UpdateCategory(Category category) {
-        return null;
+    public Category UpdateCategory(CategoryResquest category,Integer id) {
+        System.out.println("la nouvelle categorie au debut du service " + "  " + category.getName());
+    Category existingcateg = categorieRepository.getById(id);
+        existingcateg.setName(category.getName());
+        existingcateg.setImageUrl(category.getImageUrl());
+        System.out.println("la nouvelle categorie dans service " + "  " + existingcateg.getName());
+        categorieRepository.save(existingcateg);
+        return existingcateg;
     }
+
+
+
 }
