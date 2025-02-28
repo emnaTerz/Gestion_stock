@@ -1,14 +1,16 @@
 package com.emna.produit.Controller;
 
 import com.emna.jwt_service.Service.ServiceImpl.JwtServiceImpl;
-
-import com.emna.produit.DAO.SousCategoryRequest;
+import com.emna.produit.DAO.ProductResponse;
+import com.emna.produit.DAO.ProductResquest;
 import com.emna.produit.DTO.UserActionHistory;
 import com.emna.produit.DTO.UserDTO;
-
+import com.emna.produit.Entities.Product;
+import com.emna.produit.Entities.ProductAttribute;
 import com.emna.produit.Entities.SousCategory;
 import com.emna.produit.FeignClient.UserClient;
-import com.emna.produit.Service.CategoryService;
+import com.emna.produit.Repository.ProductAttributeRepository;
+import com.emna.produit.Service.ProductService;
 import com.emna.produit.Service.SousCategoryService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -22,26 +24,33 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+
+
+
 @RestController
 @RequestMapping("/product")
-public class SousCategoryController {
+public class ProductController {
     @Autowired
     private JwtServiceImpl jwtService;
     @Autowired
     private UserClient userClient;
 
     private final SousCategoryService souscategoryService;
-    private final CategoryService categoryService;
+    private final ProductService productService;
+    private final ProductAttributeRepository productAttributeRepository;
 
 
-    public SousCategoryController(SousCategoryService souscategoryService, CategoryService categoryService) {
+
+    public ProductController(SousCategoryService souscategoryService, ProductService productService, ProductAttributeRepository productAttributeRepository) {
         this.souscategoryService = souscategoryService;
-        this.categoryService = categoryService;
+        this.productService = productService;
+        this.productAttributeRepository = productAttributeRepository;
     }
 
 
-    @PostMapping("/createsouscategory")
-    public ResponseEntity<?> createSousCategory(@RequestBody SousCategoryRequest sousCategoryResquest, HttpServletRequest request) {
+    @PostMapping("/createproduct")
+    public ResponseEntity<?> createProduct(@RequestBody ProductResquest productResquest, HttpServletRequest request) {
         try {
 
             String token = jwtService.getTokenFromRequest(request);
@@ -84,12 +93,12 @@ public class SousCategoryController {
             }
 
 
-            SousCategory savedSousCategory = souscategoryService.CreateCategory(sousCategoryResquest);
+            Product savedProduct = productService.createProduct(productResquest);
             try {
                 UserActionHistory actionHistory = new UserActionHistory(
                         username,
-                        "L'utilisateur: " + username + " a ajouté la sous-categorie: " + sousCategoryResquest.getName(),
-                        "/createSousCategory",
+                        "L'utilisateur: " + username + " a ajouté la sous-categorie: " + savedProduct.getName(),
+                        "/createProduct",
                         "POST");
 
                 System.out.println("Sending User Action History: " + actionHistory); // Debugging Log
@@ -99,7 +108,7 @@ public class SousCategoryController {
             } catch (Exception e) {
                 System.out.println("Error logging user action: " + e.getMessage());
             }
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedSousCategory);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
 
 
         } catch (ExpiredJwtException e) {
@@ -110,11 +119,11 @@ public class SousCategoryController {
                     .body("Invalid token format.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Sous Category creation failed: " + e.getMessage());
+                    .body("Product creation failed: " + e.getMessage());
         }
     }
-    @DeleteMapping("/deleteSous/{id}")
-    public ResponseEntity<?> deleteSouscategory(@PathVariable Integer id, HttpServletRequest request) {
+    @DeleteMapping("/deleteproduct/{id}")
+    public ResponseEntity<?> deleteproduct(@PathVariable Integer id, HttpServletRequest request) {
         try {
 
             String token = jwtService.getTokenFromRequest(request);
@@ -154,13 +163,19 @@ public class SousCategoryController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Invalid token.");
             }
-            String souscategoryName = souscategoryService.GetCategory(id).getName();
-            souscategoryService.deleteCategory(id);
+            String productName = productService.getProduct(id).getName();
+
+          List<ProductAttribute>   productAttribute = productAttributeRepository.findByProductId(id);
+            for (ProductAttribute productAttributes : productAttribute) {
+                productAttributeRepository.delete(productAttributes);
+            }
+            productService.deleteProduct(id);
+
             try {
                 UserActionHistory actionHistory = new UserActionHistory(
                         username,
-                        "L'utilisateur: " + username + " a supprimer la Sous categorie: " + souscategoryName,
-                        "/deleteSousCategory",
+                        "L'utilisateur: " + username + " a supprimer le produit: " + productName,
+                        "/deleteProduct",
                         "DELET");
 
                 System.out.println("Sending User Action History: " + actionHistory); // Debugging Log
@@ -180,11 +195,11 @@ public class SousCategoryController {
                     .body("Invalid token format.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Sous Category delete failed: " + e.getMessage());
+                    .body("Procuct delete failed: " + e.getMessage());
         }
     }
-    @GetMapping("/getsous/{id}")
-    public ResponseEntity<?> getsousCategory(@PathVariable Integer id, HttpServletRequest request) {
+    @GetMapping("/getproduct/{id}")
+    public ResponseEntity<?> getproduct(@PathVariable Integer id, HttpServletRequest request) {
         try {
 
             String token = jwtService.getTokenFromRequest(request);
@@ -224,13 +239,14 @@ public class SousCategoryController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Invalid token.");
             }
-            SousCategory sous_category = souscategoryService.GetCategory(id);
+
+            ProductResponse product = productService.getProduct(id);
 
             try {
                 UserActionHistory actionHistory = new UserActionHistory(
                         username,
-                        "L'utilisateur: " + username + " a affiché la sous categorie: " + sous_category.getName(),
-                        "/getsousCategory",
+                        "L'utilisateur: " + username + " a affiché le produit : " + product.getName(),
+                        "/getProduct",
                         "GET");
 
                 System.out.println("Sending User Action History: " + actionHistory); // Debugging Log
@@ -240,7 +256,7 @@ public class SousCategoryController {
             } catch (Exception e) {
                 System.out.println("Error logging user action: " + e.getMessage());
             }
-            return ResponseEntity.ok(sous_category);
+            return ResponseEntity.ok(product);
 
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -250,12 +266,12 @@ public class SousCategoryController {
                     .body("Invalid token format.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Sous Category get failed: " + e.getMessage());
+                    .body("Category get failed: " + e.getMessage());
         }
     }
 
-    @GetMapping("/getsous")
-    public ResponseEntity<?> getAllsousCategories( HttpServletRequest request) {
+    @GetMapping("/getproduct")
+    public ResponseEntity<?> getAllProducts( HttpServletRequest request) {
         try {
 
             String token = jwtService.getTokenFromRequest(request);
@@ -295,13 +311,15 @@ public class SousCategoryController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Invalid token.");
             }
-            List<SousCategory> souscategories = souscategoryService.GetAllCategories();
+
+
+            List<ProductResponse> products = productService.getProducts();
 
             try {
                 UserActionHistory actionHistory = new UserActionHistory(
                         username,
-                        "L'utilisateur: " + username + " a affiché tous les sous categories",
-                        "/getsousALLCategory",
+                        "L'utilisateur: " + username + " a affiché tous les produits",
+                        "/getALLProducts",
                         "GET");
 
                 System.out.println("Sending User Action History: " + actionHistory); // Debugging Log
@@ -311,7 +329,7 @@ public class SousCategoryController {
             } catch (Exception e) {
                 System.out.println("Error logging user action: " + e.getMessage());
             }
-            return ResponseEntity.ok(souscategories);
+            return ResponseEntity.ok(products);
 
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -321,83 +339,13 @@ public class SousCategoryController {
                     .body("Invalid token format.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("All Sous Categories get failed: " + e.getMessage());
-        }
-    }
-    @GetMapping("/getsousbyid/{id}")
-    public ResponseEntity<?> getAllsousCategoriesbyid( HttpServletRequest request,@PathVariable Integer id) {
-        try {
-
-            String token = jwtService.getTokenFromRequest(request);
-
-            if (token == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Missing or invalid token.");
-            }
-            String username = jwtService.extractUserName(token);
-            if (username == null || username.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Invalid token: cannot extract user.");
-            }
-            UserDTO userDTO;
-            try {
-                userDTO = userClient.getUserByEmail(username);
-                System.out.println("Received User from Feign: " + userDTO);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("user not found in micro_service1.");
-            }
-
-            if (userDTO == null || userDTO.getEmail() == null || userDTO.getRole() == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Invalid user data received from micro_service1.");
-            }
-
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + userDTO.getRole()));
-
-            UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                    userDTO.getEmail(),
-                    "", // No password needed for validation
-                    authorities
-            );
-
-            if (!jwtService.isTokenValid(token, userDetails)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Invalid token.");
-            }
-            List<SousCategory> souscategories = souscategoryService.GetAllsousCategoriesbyid(id);
-
-            try {
-                UserActionHistory actionHistory = new UserActionHistory(
-                        username,
-                        "L'utilisateur: " + username + " a affiché tous les sous categories de la catégorie  " ,
-                        "/getsousALLCategory",
-                        "GET");
-
-                System.out.println("Sending User Action History: " + actionHistory); // Debugging Log
-
-                userClient.saveUserAction(actionHistory);
-
-            } catch (Exception e) {
-                System.out.println("Error logging user action: " + e.getMessage());
-            }
-            return ResponseEntity.ok(souscategories);
-
-        } catch (ExpiredJwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Token has expired, please log in again.");
-        } catch (MalformedJwtException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Invalid token format.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("All Sous Categories get failed: " + e.getMessage());
+                    .body("All Products get failed: " + e.getMessage());
         }
     }
 
-    @PutMapping("/updatesouscategory/{id}")
-    public ResponseEntity<?> updateSousCategory(@RequestBody SousCategoryRequest categoryResquest, @PathVariable Integer id, HttpServletRequest request) {
-        System.out.println("La nouvelle categorie des le debut du controlleur" + " " + categoryResquest.getName() );
+    @PutMapping("/updateproduct/{id}")
+    public ResponseEntity<?> updateCategory(@RequestBody ProductResquest productResquest,@PathVariable Integer id, HttpServletRequest request) {
+
 
         try {
 
@@ -440,18 +388,18 @@ public class SousCategoryController {
                         .body("Invalid token.");
             }
 
-            SousCategory existingCategory = souscategoryService.GetCategory(id);
-            if (existingCategory == null){
+            ProductResponse existingrod = productService.getProduct(id);
+            if (existingrod == null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Sous Category not found");}
-            System.out.println("la nouvelle categorie juste avant l'appelle du service  " + categoryResquest.getName());
-            SousCategory updatedSouscategory = souscategoryService.UpdateCategory(categoryResquest,id);
-            System.out.println("la nouvelle categorie apres l'appelle du service  " + updatedSouscategory.getName());
+                        .body("Category not found");}
+
+
+            Product updateproduct = productService.updateProduct(productResquest, id);
             try {
                 UserActionHistory actionHistory = new UserActionHistory(
                         username,
-                        "L'utilisateur: " + username + " a modifié la sous categorie: " + categoryResquest.getName(),
-                        "/updateCategory",
+                        "L'utilisateur: " + username + " a modifié le produit: " + updateproduct.getName(),
+                        "/updateProduct",
                         "PUT");
 
                 System.out.println("Sending User Action History: " + actionHistory); // Debugging Log
@@ -461,7 +409,7 @@ public class SousCategoryController {
             } catch (Exception e) {
                 System.out.println("Error logging user action: " + e.getMessage());
             }
-            return ResponseEntity.ok(updatedSouscategory);
+            return ResponseEntity.ok(updateproduct);
 
 
         } catch (ExpiredJwtException e) {
@@ -472,8 +420,85 @@ public class SousCategoryController {
                     .body("Invalid token format.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Category update failed: " + e.getMessage());
+                    .body("Product update failed: " + e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/getproductsou/{id}")
+    public ResponseEntity<?> getAllProductsbysou( HttpServletRequest request,@PathVariable Integer id) {
+        try {
+
+            String token = jwtService.getTokenFromRequest(request);
+
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Missing or invalid token.");
+            }
+            String username = jwtService.extractUserName(token);
+            if (username == null || username.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Invalid token: cannot extract user.");
+            }
+            UserDTO userDTO;
+            try {
+                userDTO = userClient.getUserByEmail(username);
+                System.out.println("Received User from Feign: " + userDTO);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("user not found in micro_service1.");
+            }
+
+            if (userDTO == null || userDTO.getEmail() == null || userDTO.getRole() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Invalid user data received from micro_service1.");
+            }
+
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + userDTO.getRole()));
+
+            UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                    userDTO.getEmail(),
+                    "", // No password needed for validation
+                    authorities
+            );
+
+            if (!jwtService.isTokenValid(token, userDetails)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Invalid token.");
+            }
+
+            SousCategory sou = souscategoryService.GetCategory(id);
+            List<ProductResponse> products = productService.getProductsBySousCategory(sou);
+
+            try {
+                UserActionHistory actionHistory = new UserActionHistory(
+                        username,
+                        "L'utilisateur: " + username + " a affiché tous les produits " + sou.getName(),
+                        "/getALLProducts",
+                        "GET");
+
+                System.out.println("Sending User Action History: " + actionHistory); // Debugging Log
+
+                userClient.saveUserAction(actionHistory);
+
+            } catch (Exception e) {
+                System.out.println("Error logging user action: " + e.getMessage());
+            }
+            return ResponseEntity.ok(products);
+
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Token has expired, please log in again.");
+        } catch (MalformedJwtException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Invalid token format.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("All Products get failed: " + e.getMessage());
         }
     }
 
 }
+
+
+

@@ -14,13 +14,14 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @Entity
-@Table(name = "category")  // Ensure table name is valid
+@Table(name = "category")
 public class Category {  // Correct class naming convention
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @NotNull
+    @Column(unique = true)
     private String name;
 
     @Temporal(TemporalType.TIMESTAMP)  // Correct annotation for date

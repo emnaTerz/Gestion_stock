@@ -21,14 +21,14 @@ public class SousCategory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @NotNull
+    @Column(unique = true)
     private String name;
-
     @Temporal(TemporalType.TIMESTAMP)  // Correct annotation for date
     private LocalDateTime creationDate;
     private String imageUrl;  // Attribut pour l'URL de l'image
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
     public SousCategory(String name, String imageUrl, Category category_Id) {
         this.name = name;
