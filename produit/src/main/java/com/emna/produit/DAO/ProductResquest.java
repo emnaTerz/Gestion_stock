@@ -12,6 +12,8 @@ public class ProductResquest {
     private String imageUrl;
     private SousCategory sousCategory;
     private double price;
+    private double quantité;
+
     private String marque;
 private List<ProductAttribute> attributes;
 
@@ -61,5 +63,13 @@ private List<ProductAttribute> attributes;
 
     public void setMarque(String marque) {
         this.marque = marque;
+    }
+
+    public double getQuantité() {
+        return quantité;
+    }
+
+    public void setQuantité(double quantité) {
+        this.quantité = quantité;
     }
 }

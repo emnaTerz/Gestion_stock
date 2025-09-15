@@ -1,62 +1,32 @@
-package com.emna.produit.Entities;
+package emna.commande.DTO;
 
-
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import org.antlr.v4.runtime.misc.NotNull;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
-@Builder
-@AllArgsConstructor
-@Entity
-@Table(name = "Product")
 public class Product {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @NotNull
-    @Column(unique = true)
     private String name;
-
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime creationDate;
     private String imageUrl;
     private double price;
     private double quantité;
     private String marque;
-    @ManyToOne
-    @JoinColumn(name = "sous_category_id", nullable = false)  // Clé étrangère vers Category
     private SousCategory sousCategory;
 
-    public Product(String name, String imageUrl, double price, double quantité, String marque, SousCategory sousCategory) {
+
+    public Product(String name, String imageUrl, double price, String marque, SousCategory sousCategory, double quantité) {
         this.name = name;
-        this.creationDate = LocalDateTime.now();
         this.imageUrl = imageUrl;
         this.price = price;
-        this.quantité = quantité;
         this.marque = marque;
         this.sousCategory = sousCategory;
+        this.creationDate = LocalDateTime.now();
+        this.quantité = quantité;
     }
-
 
     public Product() {
 
-    }
-
-
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getName() {

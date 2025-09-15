@@ -44,7 +44,7 @@ public class AuthenticationController {
     private JwtServiceImpl jwtService;
 
 
- @PostMapping("/signup")
+/* @PostMapping("/signup")
     public ResponseEntity<?> signup(
             @RequestBody SignUpRequest request,
             HttpServletRequest httpRequest) {
@@ -89,6 +89,31 @@ public class AuthenticationController {
         } catch (MalformedJwtException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Invalid token format.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Registration failed: " + e.getMessage());
+        }
+    }*/
+
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(
+            @RequestBody SignUpRequest request,
+            HttpServletRequest httpRequest) {
+
+        try {
+
+
+            // Créer le nouvel utilisateur
+            authenticationService.signup(request);
+            System.out.println("User registration successful.");
+
+           // userActionService.logUserAction(username, "l'utilisateur:" + username + " a créer l'utilisateur: " + request.getEmail(), "/createUser" , "POST");
+
+            //  Retourner la réponse
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body("User created successfully.");
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Registration failed: " + e.getMessage());
@@ -317,7 +342,7 @@ public class AuthenticationController {
     }
 
 
-    @PostMapping("/historique/add")
+  /*  @PostMapping("/historique/add")
     public ResponseEntity<?> createUserHistory(@RequestBody UserActionHistory userActionHistory) {
         System.out.println("Received UserActionHistory: " + userActionHistory.getAction() + ""
                 + userActionHistory.getEndpoint() + "" + userActionHistory.getUsername() + "" + userActionHistory.getMethod()); // Debugging Log
@@ -335,7 +360,25 @@ public class AuthenticationController {
         );
 
         return ResponseEntity.ok("User history logged successfully.");
-    }
+    }*/
+  @PostMapping("/historique/add")
+  public ResponseEntity<Void> createUserHistory(@RequestBody UserActionHistory userActionHistory) {
+      System.out.println("Received UserActionHistory: " + userActionHistory.getAction());
+
+      if (userActionHistory.getUsername() == null || userActionHistory.getAction() == null ||
+              userActionHistory.getEndpoint() == null || userActionHistory.getMethod() == null) {
+          return ResponseEntity.badRequest().build(); // No body
+      }
+
+      userActionService.logUserAction(
+              userActionHistory.getUsername(),
+              userActionHistory.getAction(),
+              userActionHistory.getEndpoint(),
+              userActionHistory.getMethod()
+      );
+
+      return ResponseEntity.ok().build(); // No body
+  }
 
 
 

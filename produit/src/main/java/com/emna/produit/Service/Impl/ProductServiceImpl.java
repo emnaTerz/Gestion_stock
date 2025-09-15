@@ -59,19 +59,15 @@ public class ProductServiceImpl implements ProductService {
                 product.getPrice(),
                 product.getMarque(),
                 productAttributeResponses,
-                product.getSousCategory()
-        );
+                product.getSousCategory(),
+                product.getQuantité()
+
+                );
 System.out.println("sous cat   " +   product.getSousCategory().getName()
 );
         return productResponse;
     }
 
-
-   /* @Override
-    public List<Product> getProducts() {
-        return productRepository.findAll();
-    }
-*/
 
     @Override
     public List<ProductResponse> getProducts() {
@@ -100,8 +96,9 @@ System.out.println("sous cat   " +   product.getSousCategory().getName()
                     product.getPrice(),
                     product.getMarque(),
                     productAttributeResponses,
-                    product.getSousCategory()
-            );
+                    product.getSousCategory(),
+                    product.getQuantité()
+                    );
 
             productResponses.add(productResponse);
         }
@@ -111,7 +108,8 @@ System.out.println("sous cat   " +   product.getSousCategory().getName()
 
     @Override
     public Product createProduct(ProductResquest productResquest) {
-        Product newProduct = new Product(productResquest.getName(), productResquest.getImageUrl(),productResquest.getPrice(),productResquest.getMarque(),productResquest.getSousCategory());
+        Product newProduct = new Product(productResquest.getName(), productResquest.getImageUrl(),
+                productResquest.getPrice(),productResquest.getQuantité(),productResquest.getMarque(),productResquest.getSousCategory());
 
         Product savedProduct = productRepository.save(newProduct);
         if (productResquest.getAttributes() != null && !productResquest.getAttributes().isEmpty()) {
@@ -167,8 +165,10 @@ System.out.println("sous cat   " +   product.getSousCategory().getName()
                     product.getPrice(),
                     product.getMarque(),
                     productAttributeResponses,
-                    product.getSousCategory()
-            );
+                    product.getSousCategory(),
+                    product.getQuantité()
+
+                    );
 
             productResponses.add(productResponse);
         }

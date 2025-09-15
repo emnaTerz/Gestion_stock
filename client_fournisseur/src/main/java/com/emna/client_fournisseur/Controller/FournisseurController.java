@@ -95,7 +95,7 @@ private final FournisseurService fournisseurService;
                 .body("Fournisseur creation failed: " + e.getMessage());
     }}
 
-   @GetMapping ("/getclient/{id}")
+   @GetMapping ("/getfournisseur/{id}")
     ResponseEntity <?> getFournisseur (@PathVariable Integer id, HttpServletRequest request)
     {
         try {

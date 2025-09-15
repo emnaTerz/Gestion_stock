@@ -17,11 +17,13 @@ public class ProductResponse {
     private String imageUrl;  // Optionnel si tu veux l'ajouter
     private Double price;  // Exemple d'attribut
     private String marque;
+    private double quantité;
     @JsonProperty("sousCategory")
     private SousCategory sousCategory;
     private List<ProductAttributeResponse> attributes;
 
-    public ProductResponse(Integer id, String name, String imageUrl, Double price, String marque, List<ProductAttributeResponse> attributes,SousCategory sousCategory) {
+    public ProductResponse(Integer id, String name, String imageUrl, Double price, String marque, List<ProductAttributeResponse> attributes,SousCategory sousCategory,  double quantité
+) {
         this.id = id;
         this.name = name;
         this.imageUrl = imageUrl;
@@ -29,6 +31,8 @@ public class ProductResponse {
         this.marque = marque;
         this.attributes = attributes;
         this.sousCategory = sousCategory;
+        this.quantité = quantité;
+
     }
 
     public Integer getId() {
